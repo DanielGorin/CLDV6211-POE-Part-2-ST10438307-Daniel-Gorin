@@ -28,11 +28,11 @@
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.Description)
         </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ImageURL)
+        <dt class="col-sm-2">
+            Temp Image
         </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ImageURL)
+        <dd class="col-sm-10">
+            <img src="@Model.ImageURL" alt="Venue Image" class="img-fluid rounded" style="max-width: 500px;" /> <!-- Displays the image using the given URL-->
         </dd>
     </dl>
 </div>
