@@ -56,7 +56,7 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
             }
             return View(venue);
         }
-        //Updates the edited elemen
+        //Updates the edited element
         //--------------------------------------------------------------
         [HttpPost]
         public async Task<IActionResult> Edit(int id, Venue venue)
@@ -141,7 +141,7 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
 
             return View(venue);
         }
-
+        //checks that a venue with the selected ID exisits
         private bool VenueExists(int id)
         {
             return _context.Venue.Any(e => e.Id == id);
