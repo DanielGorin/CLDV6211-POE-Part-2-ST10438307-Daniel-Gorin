@@ -7,6 +7,6 @@
         public DateTime Date { get; set; } //The date the event is cheduled for
         public string Description { get; set; } //A description of the event
         public string ImageURL { get; set; } //A URL that directs to an image for the event
-        public List<Booking> Bookings { get; set; }
+        //public List<Booking> Bookings { get; set; }
     }
 }
