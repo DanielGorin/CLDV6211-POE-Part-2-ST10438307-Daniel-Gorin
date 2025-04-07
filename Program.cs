@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Models;
+
 namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin
 {
     public class Program
@@ -8,6 +11,10 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+
+            //Added in to connect to Azure Db
+            builder.Services.AddDbContext<EaseDbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefCon"))); 
 
             var app = builder.Build();
 

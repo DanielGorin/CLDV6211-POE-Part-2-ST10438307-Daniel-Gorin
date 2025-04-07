@@ -9,6 +9,6 @@
         public string ImageURL { get; set; } //A URL that directs to an image for the event
         public bool WheelchairAccess { get; set; } //Wheather the venue is accesable to wheelcahir users
         public bool PetFriendly { get; set; } //Wheather the venue allows pets
-
+        //public List<Booking> Bookings { get; set; }
     }
 }
