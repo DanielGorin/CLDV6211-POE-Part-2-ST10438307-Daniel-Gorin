@@ -11,16 +11,23 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
         {
             _context = context;
         }
-
+        //Loads the Venues into a table for users to VIEW
+        //-------------------------------------------------------------------------------------------------------------------------
         public async Task<IActionResult> Index()
         {
             var venues = await _context.Venue.ToListAsync();
             return View(venues);
         }
+        //Allows users to CREATE new Venues
+        //-------------------------------------------------------------------------------------------------------------------------
+        //Opens the venue create view
+        //--------------------------------------------------------------
         public IActionResult Create()
         {
             return View();
         }
+        //Adds new elements ot the venue table
+        //--------------------------------------------------------------
         [HttpPost]
         public async Task<IActionResult> Create(Venue venue)
         {
@@ -32,6 +39,10 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
             }
             return View(venue);
         }
+        //Allows users to EDIT exisitng venues
+        //-------------------------------------------------------------------------------------------------------------------------
+        //Loads the data and Opens the venue create view
+        //--------------------------------------------------------------
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -45,6 +56,8 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
             }
             return View(venue);
         }
+        //Updates the edited elemen
+        //--------------------------------------------------------------
         [HttpPost]
         public async Task<IActionResult> Edit(int id, Venue venue)
         {
@@ -73,6 +86,59 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+            return View(venue);
+        }
+        //Allows users to DELETE exisitng venues
+        //-------------------------------------------------------------------------------------------------------------------------
+        //Loads the data and Opens the venue delete view
+        //--------------------------------------------------------------
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var venue = await _context.Venue
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (venue == null)
+            {
+                return NotFound();
+            }
+
+            return View(venue);
+        }
+        //Deletes the selected element
+        //--------------------------------------------------------------
+        [HttpPost, ActionName("Delete")]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var venue = await _context.Venue.FindAsync(id);
+            if (venue != null)
+            {
+                _context.Venue.Remove(venue);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+        //Loads the Venues into a table for users to VIEW
+        //-------------------------------------------------------------------------------------------------------------------------
+
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var venue = await _context.Venue
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (venue == null)
+            {
+                return NotFound();
+            }
+
             return View(venue);
         }
 
