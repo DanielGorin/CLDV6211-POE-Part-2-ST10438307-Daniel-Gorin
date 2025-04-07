@@ -1,4 +1,13 @@
-﻿using CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Models;
+﻿// Daniel Gorin
+// ST10438307
+// CLDV6211 BCAD Group 4
+
+// References:
+//             https://www.youtube.com/playlist?list=PL480DYS-b_kevhFsiTpPIB2RzhKPig4iK
+//             https://chatgpt.com/
+
+
+using CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -39,7 +48,7 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
             }
             return View(evnt);
         }
-        //Allows users to EDIT exisitng venues
+        //Allows users to EDIT exisitng venues (This section was competed with the assistance of generative AI [chatGPT])
         //-------------------------------------------------------------------------------------------------------------------------
         //Loads the data and Opens the venue create view
         //--------------------------------------------------------------
@@ -122,7 +131,7 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
 
             return RedirectToAction(nameof(Index));
         }
-        //Loads the Events into a table for users to VIEW
+        //Loads the Events into a table for users to VIEW (This section was competed with the assistance of generative AI [chatGPT])
         //-------------------------------------------------------------------------------------------------------------------------
 
         public async Task<IActionResult> Details(int? id)
@@ -142,6 +151,7 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
             return View(evnt);
         }
         //checks that a venue with the selected ID exisits
+        //-------------------------------------------------------------------------------------------------------------------------
         private bool EventExists(int id)
         {
             return _context.Event.Any(e => e.Id == id);
