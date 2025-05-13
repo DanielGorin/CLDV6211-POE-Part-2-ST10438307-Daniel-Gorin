@@ -1,43 +1,82 @@
 ﻿@model CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Models.Booking
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Create Booking";
+    var events = (ViewBag.AvailableEvents as IEnumerable<CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Models.Event>) ?? Enumerable.Empty<CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Models.Event>();
+    var venues = (ViewBag.AllVenues as IEnumerable<CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Models.Venue>) ?? Enumerable.Empty<CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Models.Venue>();
+
 }
 
-<h1>Create</h1>
-
-<h4>Booking</h4>
+<h1>Create Booking</h1>
 <hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="VenueId" class="control-label"></label>
-                <input asp-for="VenueId" class="form-control" />
-                <span asp-validation-for="VenueId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="EventId" class="control-label"></label>
-                <input asp-for="EventId" class="form-control" />
-                <span asp-validation-for="EventId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="BookingDate" class="control-label"></label>
-                <input asp-for="BookingDate" class="form-control" type="date"/>
-                <span asp-validation-for="BookingDate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+<form asp-action="Create" method="post">
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <input type="hidden" asp-for="BookingDate" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+
+<h3>Select an Event</h3>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Select</th>
+            <th>Name</th>
+            <th>Date</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var evt in events)
+        {
+            <tr>
+                <td><input type="radio" name="EventId" asp-for="EventId" value="@evt.Id" data-date="@evt.Date.ToString("yyyy-MM-dd")" /></td>
+                <td>@evt.Name</td>
+                <td>@evt.Date.ToShortDateString()</td>
+                <td>@evt.Description</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h3>Select a Venue</h3>
+<table class="table table-bordered" id="venueTable">
+    <thead>
+        <tr>
+            <th>Select</th>
+            <th>Name</th>
+            <th>Address</th>
+            <th>Capacity</th>
+            <th>Wheelchair Access</th>
+            <th>Pet Friendly</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var v in venues)
+        {
+            <tr data-id="@v.Id">
+                <td><input type="radio" name="VenueId" asp-for="VenueId" value="@v.Id" /></td>
+                <td>@v.Name</td>
+                <td>@v.Adress</td>
+                <td>@v.Capacity</td>
+                <td>@v.WheelchairAccess</td>
+                <td>@v.PetFriendly</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+    <div class="form-group">
+        <input type="submit" value="Create" class="btn btn-primary" />
     </div>
-</div>
+</form>
+@if (Model != null)
+{
+    <div class="alert alert-info mt-3">
+        <strong>Debug Output:</strong><br />
+        EventId: @Model.EventId <br />
+        VenueId: @Model.VenueId <br />
+        BookingDate: @Model.BookingDate.ToShortDateString()
+    </div>
+}
 
 <div>
     <a asp-action="Index">Back to List</a>
 </div>
-
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}

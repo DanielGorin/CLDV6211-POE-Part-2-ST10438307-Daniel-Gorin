@@ -34,8 +34,21 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
         //-------------------------------------------------------------------------------------------------------------------------
         //Opens the booking create view
         //--------------------------------------------------------------
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            var bookedEventIds = await _context.Booking
+                .Select(b => b.EventId)
+                .ToListAsync();
+
+            var availableEvents = await _context.Event
+                .Where(e => !bookedEventIds.Contains(e.Id))
+                .ToListAsync();
+
+            var venues = await _context.Venue.ToListAsync();
+
+            ViewBag.AvailableEvents = availableEvents;
+            ViewBag.AllVenues = venues;
+
             return View();
         }
         //Adds new elements ot the booking table
@@ -43,13 +56,30 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(Booking booking)
         {
+            //ModelState.Remove("Venue");//overides validation
+           // ModelState.Remove("Event");
             if (ModelState.IsValid)
             {
                 _context.Add(booking);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(booking);
+
+            // ❗ We must re-fetch ViewBag data here if the form is invalid
+            var bookedEventIds = await _context.Booking
+                .Select(b => b.EventId)
+                .ToListAsync();
+
+            var availableEvents = await _context.Event
+                .Where(e => !bookedEventIds.Contains(e.Id))
+                .ToListAsync();
+
+            var venues = await _context.Venue.ToListAsync();
+
+            ViewBag.AvailableEvents = availableEvents;
+            ViewBag.AllVenues = venues;
+
+            return View(booking); // Re-show form with errors and user selections
         }
         //Allows users to EDIT exisitng bookings (This section was competed with the assistance of generative AI [chatGPT])
         //-------------------------------------------------------------------------------------------------------------------------
