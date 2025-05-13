@@ -46,7 +46,10 @@
                 @Html.DisplayFor(modelItem => item.Capacity)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.ImageURL)
+                    @if (!string.IsNullOrEmpty(item.ImageURL))
+                    {
+                        <img src="@item.ImageURL" alt="Venue Image" width="150" />
+                    }
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.WheelchairAccess)
