@@ -57,7 +57,23 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
         public async Task<IActionResult> Create(Booking booking)
         {
             //ModelState.Remove("Venue");//overides validation
-           // ModelState.Remove("Event");
+            // ModelState.Remove("Event");
+            var eventDate = await _context.Event
+                .Where(e => e.Id == booking.EventId)
+                .Select(e => e.Date)
+                .FirstOrDefaultAsync();
+
+            // 🔍 STEP 2: Check if any existing booking uses this venue on the same date
+            bool isVenueBooked = await _context.Booking
+                .Include(b => b.Event)
+                .AnyAsync(b => b.VenueId == booking.VenueId && b.Event.Date == eventDate);
+
+            // ❌ If venue is booked, add validation error
+            if (isVenueBooked)
+            {
+                ModelState.AddModelError("VenueId", "This venue is already booked for the selected event date.");
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Add(booking);
@@ -79,7 +95,7 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
             ViewBag.AvailableEvents = availableEvents;
             ViewBag.AllVenues = venues;
 
-            return View(booking); // Re-show form with errors and user selections
+            return View(booking); // Re-show form with error messages
         }
         //Allows users to EDIT exisitng bookings (This section was competed with the assistance of generative AI [chatGPT])
         //-------------------------------------------------------------------------------------------------------------------------
