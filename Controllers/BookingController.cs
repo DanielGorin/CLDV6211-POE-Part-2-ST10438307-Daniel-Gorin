@@ -21,13 +21,27 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
         }
         //Loads the Bookings into a table for users to VIEW
         //-------------------------------------------------------------------------------------------------------------------------
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString)
         {
-            var bookings = await _context.Booking
-        .Include(b => b.Event)//brings in the Event data
-        .Include(b => b.Venue)//brings in the Venue data
-        .ToListAsync();
+            var bookingsQuery = _context.Booking
+                .Include(b => b.Event)
+                .Include(b => b.Venue)
+                .AsQueryable();
 
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                // Try to parse as Booking ID
+                if (int.TryParse(searchString, out int bookingId))
+                {
+                    bookingsQuery = bookingsQuery.Where(b => b.Id == bookingId);
+                }
+                else
+                {
+                    bookingsQuery = bookingsQuery.Where(b => b.Event.Name.Contains(searchString));
+                }
+            }
+
+            var bookings = await bookingsQuery.ToListAsync();
             return View(bookings);
         }
         //Allows users to CREATE new Bookings
