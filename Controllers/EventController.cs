@@ -8,7 +8,9 @@
 
 
 using CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Models;
+using CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 
 namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
@@ -38,8 +40,17 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
         //Adds new elements ot the event table
         //--------------------------------------------------------------
         [HttpPost]
-        public async Task<IActionResult> Create(Event evnt)
+        public async Task<IActionResult> Create(Event evnt, IFormFile imageFile, [FromServices] BlobStorageService blobService, [FromServices] IConfiguration config)
         {
+            if (imageFile != null && imageFile.Length > 0)
+            {
+                string containerName = config["AzureStorage:ImageContainer"];
+                string imageUrl = await blobService.UploadFileAsync(imageFile, containerName);
+                evnt.ImageURL = imageUrl;
+            }
+
+            ModelState.Remove("ImageURL");
+
             if (ModelState.IsValid)
             {
                 _context.Add(evnt);
@@ -50,7 +61,7 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
         }
         //Allows users to EDIT exisitng venues (This section was competed with the assistance of generative AI [chatGPT])
         //-------------------------------------------------------------------------------------------------------------------------
-        //Loads the data and Opens the venue create view
+        //Loads the data and Opens the venue edit view
         //--------------------------------------------------------------
         public async Task<IActionResult> Edit(int? id)
         {
@@ -68,12 +79,40 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
         //Updates the edited element
         //--------------------------------------------------------------
         [HttpPost]
-        public async Task<IActionResult> Edit(int id, Event evnt)
+        public async Task<IActionResult> Edit(int id, Event evnt, IFormFile imageFile, [FromServices] BlobStorageService blobService, [FromServices] IConfiguration config)
         {
+
+            
+
             if (id != evnt.Id)
             {
                 return NotFound();
             }
+
+            var originalEvent = await _context.Event.AsNoTracking().FirstOrDefaultAsync(e => e.Id == id);
+           
+            if (originalEvent == null)
+            {
+                return NotFound();
+            }
+
+            if (imageFile != null && imageFile.Length > 0)
+            {
+                // Delete old blob
+                if (!string.IsNullOrEmpty(originalEvent.ImageURL))
+                    await blobService.DeleteFileAsync(originalEvent.ImageURL, config["AzureStorage:ImageContainer"]);
+
+                // Upload new blob
+                string imageUrl = await blobService.UploadFileAsync(imageFile, config["AzureStorage:ImageContainer"]);
+                evnt.ImageURL = imageUrl;
+            }
+            else
+            {
+                // Keep old image if none uploaded
+                evnt.ImageURL = originalEvent.ImageURL;
+            }
+
+            ModelState.Remove("ImageFile");
 
             if (ModelState.IsValid)
             {
@@ -93,8 +132,10 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
                         throw;
                     }
                 }
+
                 return RedirectToAction(nameof(Index));
             }
+
             return View(evnt);
         }
         //Allows users to DELETE exisitng venues
@@ -120,11 +161,18 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
         //Deletes the selected element
         //--------------------------------------------------------------
         [HttpPost, ActionName("Delete")]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id, [FromServices] BlobStorageService blobService, [FromServices] IConfiguration config)
         {
             var evnt = await _context.Event.FindAsync(id);
+
             if (evnt != null)
             {
+                // Delete blob image
+                if (!string.IsNullOrEmpty(evnt.ImageURL))
+                {
+                    await blobService.DeleteFileAsync(evnt.ImageURL, config["AzureStorage:ImageContainer"]);
+                }
+
                 _context.Event.Remove(evnt);
                 await _context.SaveChangesAsync();
             }

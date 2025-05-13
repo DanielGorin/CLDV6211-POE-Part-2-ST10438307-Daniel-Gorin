@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Services;
 using CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Models;
 
 namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin
@@ -14,7 +15,9 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin
 
             //Added in to connect to Azure Db
             builder.Services.AddDbContext<EaseDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefCon"))); 
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefCon")));
+
+            builder.Services.AddSingleton<BlobStorageService>();
 
             var app = builder.Build();
 
