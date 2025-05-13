@@ -108,8 +108,7 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
             }
             else
             {
-                // Keep old image if none uploaded
-                evnt.ImageURL = originalEvent.ImageURL;
+                evnt.ImageURL = originalEvent.ImageURL;//keeps old img
             }
 
             ModelState.Remove("ImageFile");
