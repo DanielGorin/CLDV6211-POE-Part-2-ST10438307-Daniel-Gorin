@@ -1,44 +1,107 @@
 ﻿@model CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Models.Booking
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Edit Booking";
+    var events = (ViewBag.AllEvents as IEnumerable<CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Models.Event>) ?? Enumerable.Empty<CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Models.Event>();
+    var venues = (ViewBag.AllVenues as IEnumerable<CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Models.Venue>) ?? Enumerable.Empty<CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Models.Venue>();
 }
 
-<h1>Edit</h1>
-
-<h4>Booking</h4>
+<h1>Edit Booking</h1>
 <hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="VenueId" class="control-label"></label>
-                <input asp-for="VenueId" class="form-control" />
-                <span asp-validation-for="VenueId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="EventId" class="control-label"></label>
-                <input asp-for="EventId" class="form-control" />
-                <span asp-validation-for="EventId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="BookingDate" class="control-label"></label>
-                <input asp-for="BookingDate" class="form-control" type="date />
-                <span asp-validation-for="BookingDate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="Id" />
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <h3>Event (Cannot Be Changed)</h3>
+    <div class="card p-3 mb-3">
+        @{
+            var selectedEvent = events.FirstOrDefault(e => e.Id == Model.EventId);
+        }
+
+        <input type="hidden" asp-for="EventId" /> <!-- required for model binding -->
+        @if (selectedEvent != null)
+        {
+            <p><strong>Name:</strong> @selectedEvent.Name</p>
+            <p><strong>Date:</strong> @selectedEvent.Date.ToShortDateString()</p>
+            <p><strong>Description:</strong> @selectedEvent.Description</p>
+        }
+        else
+        {
+            <p class="text-danger">Error: Event not found.</p>
+        }
     </div>
-</div>
+
+    <h3>Select a Venue</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Select</th>
+                <th>Name</th>
+                <th>Address</th>
+                <th>Capacity</th>
+                <th>Wheelchair Access</th>
+                <th>Pet Friendly</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var v in venues)
+            {
+                <tr>
+                    <td>
+                        <input type="radio" name="VenueId" value="@v.Id"
+                               class="venue-radio"
+                               data-venue-id="@v.Id"
+                        @(Model.VenueId == v.Id ? "checked" : "") />
+                    </td>
+                    <td>@v.Name</td>
+                    <td>@v.Adress</td>
+                    <td>@v.Capacity</td>
+                    <td>@v.WheelchairAccess</td>
+                    <td>@v.PetFriendly</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <input type="hidden" asp-for="BookingDate" />
+
+    <div class="form-group mt-3">
+        <input type="submit" value="Save" class="btn btn-primary" />
+    </div>
+</form>
 
 <div>
     <a asp-action="Index">Back to List</a>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        const bookedVenueDates = @Html.Raw(Json.Serialize(ViewBag.BookedVenueDates));
+
+        document.querySelectorAll('.event-radio').forEach(eventRadio => {
+            eventRadio.addEventListener('change', () => {
+                const selectedDate = eventRadio.getAttribute('data-date');
+
+                document.querySelectorAll('.venue-radio').forEach(venueRadio => {
+                    const venueId = parseInt(venueRadio.getAttribute('data-venue-id'));
+
+                    const isBooked = bookedVenueDates.some(b =>
+                        b.venueId === venueId && b.date === selectedDate
+                    );
+
+                    venueRadio.disabled = isBooked;
+                    venueRadio.closest('tr').style.opacity = isBooked ? 0.4 : 1;
+                });
+            });
+
+            // Trigger change for pre-checked event
+            if (eventRadio.checked) {
+                eventRadio.dispatchEvent(new Event('change'));
+            }
+        });
+    </script>
 }

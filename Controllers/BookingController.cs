@@ -63,12 +63,10 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
                 .Select(e => e.Date)
                 .FirstOrDefaultAsync();
 
-            // 🔍 STEP 2: Check if any existing booking uses this venue on the same date
             bool isVenueBooked = await _context.Booking
                 .Include(b => b.Event)
                 .AnyAsync(b => b.VenueId == booking.VenueId && b.Event.Date == eventDate);
 
-            // ❌ If venue is booked, add validation error
             if (isVenueBooked)
             {
                 ModelState.AddModelError("VenueId", "This venue is already booked for the selected event date.");
@@ -81,7 +79,6 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // ❗ We must re-fetch ViewBag data here if the form is invalid
             var bookedEventIds = await _context.Booking
                 .Select(b => b.EventId)
                 .ToListAsync();
@@ -99,19 +96,40 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
         }
         //Allows users to EDIT exisitng bookings (This section was competed with the assistance of generative AI [chatGPT])
         //-------------------------------------------------------------------------------------------------------------------------
-        //Loads the data and Opens the booking create view
+        //Loads the data and Opens the booking edit view
         //--------------------------------------------------------------
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
+            if(id == null)
             {
                 return NotFound();
             }
-            var booking = await _context.Booking.FindAsync(id);
+
+            var booking = await _context.Booking
+                .Include(b => b.Event)
+                .FirstOrDefaultAsync(b => b.Id == id);
+
             if (booking == null)
             {
                 return NotFound();
             }
+
+            var bookedVenueDates = await _context.Booking
+                .Include(b => b.Event)
+                .Where(b => b.Id != booking.Id) // exclude current booking
+                .Select(b => new {
+                    VenueId = b.VenueId,
+                    Date = b.Event.Date.ToString("yyyy-MM-dd")
+                })
+                .ToListAsync();
+
+            var allEvents = await _context.Event.ToListAsync();
+            var allVenues = await _context.Venue.ToListAsync();
+
+            ViewBag.AllEvents = allEvents;
+            ViewBag.AllVenues = allVenues;
+            ViewBag.BookedVenueDates = bookedVenueDates;
+
             return View(booking);
         }
         //Updates the edited element
@@ -120,8 +138,24 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
         public async Task<IActionResult> Edit(int id, Booking booking)
         {
             if (id != booking.Id)
-            {
                 return NotFound();
+
+            var eventDate = await _context.Event
+                .Where(e => e.Id == booking.EventId)
+                .Select(e => e.Date)
+                .FirstOrDefaultAsync();
+
+            bool isVenueBooked = await _context.Booking
+                .Include(b => b.Event)
+                .AnyAsync(b =>
+                    b.Id != booking.Id &&
+                    b.VenueId == booking.VenueId &&
+                    b.Event.Date == eventDate
+                );
+
+            if (isVenueBooked)
+            {
+                ModelState.AddModelError("VenueId", "This venue is already booked on the selected event date.");
             }
 
             if (ModelState.IsValid)
@@ -130,20 +164,31 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
                 {
                     _context.Update(booking);
                     await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
                     if (!BookingExists(booking.Id))
-                    {
                         return NotFound();
-                    }
                     else
-                    {
                         throw;
-                    }
                 }
-                return RedirectToAction(nameof(Index));
             }
+
+            var allEvents = await _context.Event.ToListAsync();
+            var allVenues = await _context.Venue.ToListAsync();
+            var bookedVenueDates = await _context.Booking
+                .Include(b => b.Event)
+                .Where(b => b.Id != booking.Id)
+                .Select(b => new {
+                    VenueId = b.VenueId,
+                    Date = b.Event.Date.ToString("yyyy-MM-dd")
+                }).ToListAsync();
+
+            ViewBag.AllEvents = allEvents;
+            ViewBag.AllVenues = allVenues;
+            ViewBag.BookedVenueDates = bookedVenueDates;
+
             return View(booking);
         }
         //Allows users to DELETE exisitng bookings
@@ -158,7 +203,10 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
             }
 
             var booking = await _context.Booking
+                .Include(b => b.Event)
+                .Include(b => b.Venue)
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (booking == null)
             {
                 return NotFound();
@@ -180,7 +228,7 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
 
             return RedirectToAction(nameof(Index));
         }
-        //Loads the slected booking into a detailed description view (This section was competed with the assistance of generative AI)
+        //Loads the slected booking into a detailed description view
         //-------------------------------------------------------------------------------------------------------------------------
 
         public async Task<IActionResult> Details(int? id)
@@ -191,7 +239,10 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
             }
 
             var booking = await _context.Booking
+                .Include(b => b.Event)
+                .Include(b => b.Venue)
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (booking == null)
             {
                 return NotFound();
