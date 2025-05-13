@@ -165,17 +165,25 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
         {
             var evnt = await _context.Event.FindAsync(id);
 
-            if (evnt != null)
-            {
-                // Delete blob image
-                if (!string.IsNullOrEmpty(evnt.ImageURL))
-                {
-                    await blobService.DeleteFileAsync(evnt.ImageURL, config["AzureStorage:ImageContainer"]);
-                }
+            if (evnt == null)
+                return NotFound();
 
-                _context.Event.Remove(evnt);
-                await _context.SaveChangesAsync();
+            bool hasBookings = await _context.Booking.AnyAsync(b => b.EventId == id);//check if event is in use
+
+            if (hasBookings)
+            {
+                TempData["ErrorMessage"] = "This event cannot be deleted because it is associated with an existing booking.";
+                return RedirectToAction(nameof(Delete), new { id });
             }
+
+
+            if (!string.IsNullOrEmpty(evnt.ImageURL))//Delete image from Blob if it exists
+            {
+                await blobService.DeleteFileAsync(evnt.ImageURL, config["AzureStorage:ImageContainer"]);
+            }
+
+            _context.Event.Remove(evnt);//Remove from DB
+            await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }

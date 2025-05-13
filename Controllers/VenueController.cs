@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Models;
 using CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Services;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
 
 namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
 {
@@ -128,34 +129,53 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
         //-------------------------------------------------------------------------------------------------------------------------
         //Loads the data and Opens the venue delete view
         //--------------------------------------------------------------
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var venue = await _context.Venue.FirstOrDefaultAsync(v => v.Id == id);
+
+            if (venue == null)
+            {
+                return NotFound();
+            }
+
+            return View(venue);
+        }
+
+        //Deletes the selected element
+        //--------------------------------------------------------------
+        [HttpPost, ActionName("Delete")]
         public async Task<IActionResult> DeleteConfirmed(int id, [FromServices] BlobStorageService blobService, [FromServices] IConfiguration config)
         {
             var venue = await _context.Venue.FindAsync(id);
 
-            if (venue != null)
+            if (venue == null)
             {
-                if (!string.IsNullOrEmpty(venue.ImageURL))
-                {
-                    await blobService.DeleteFileAsync(venue.ImageURL, config["AzureStorage:ImageContainer"]);
-                }
-
-                _context.Venue.Remove(venue);
-                await _context.SaveChangesAsync();
+                return NotFound();
             }
 
-            return RedirectToAction(nameof(Index));
-        }
-        //Deletes the selected element
-        //--------------------------------------------------------------
-        [HttpPost, ActionName("Delete")]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var venue = await _context.Venue.FindAsync(id);
-            if (venue != null)
+            // Check if venue is part of a booking
+            bool hasBookings = await _context.Booking.AnyAsync(b => b.VenueId == id);
+
+            if (hasBookings)
             {
-                _context.Venue.Remove(venue);
-                await _context.SaveChangesAsync();
+                TempData["ErrorMessage"] = "This venue cannot be deleted because it is associated with an existing booking.";
+                return RedirectToAction(nameof(Delete), new { id });
             }
+
+            // Delete Blob image if present
+            if (!string.IsNullOrEmpty(venue.ImageURL))
+            {
+                await blobService.DeleteFileAsync(venue.ImageURL, config["AzureStorage:ImageContainer"]);
+            }
+
+            // Remove venue
+            _context.Venue.Remove(venue);
+            await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
