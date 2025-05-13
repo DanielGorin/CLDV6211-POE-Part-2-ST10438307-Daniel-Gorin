@@ -13,13 +13,16 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.VenueId)
+                Event
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.EventId)
+                Venue
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.BookingDate)
+                Date
+            </th>
+            <th>
+                Date Booked
             </th>
             <th></th>
         </tr>
@@ -28,14 +31,17 @@
 @foreach (var item in Model) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.VenueId)
+                @Html.DisplayFor(modelItem => item.Event.Name)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.EventId)
+                @Html.DisplayFor(modelItem => item.Venue.Name)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.BookingDate)
+                    @(item.Event?.Date.ToString("yyyy-MM-dd"))
             </td>
+                <td>
+                    @(item.BookingDate.ToString("yyyy-MM-dd"))
+                </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
                 <a asp-action="Details" asp-route-id="@item.Id">Details</a> |

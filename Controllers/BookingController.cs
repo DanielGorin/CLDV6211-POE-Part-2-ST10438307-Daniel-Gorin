@@ -23,7 +23,11 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
         //-------------------------------------------------------------------------------------------------------------------------
         public async Task<IActionResult> Index()
         {
-            var bookings = await _context.Booking.ToListAsync();
+            var bookings = await _context.Booking
+        .Include(b => b.Event)//brings in the Event data
+        .Include(b => b.Venue)//brings in the Venue data
+        .ToListAsync();
+
             return View(bookings);
         }
         //Allows users to CREATE new Bookings

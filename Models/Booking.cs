@@ -6,5 +6,7 @@
         public int VenueId { get; set; } // The ID for the associated venue
         public int EventId { get; set; }// The ID for teh associated event
         public DateTime BookingDate { get; set; }// the date the booking was made
+        public Venue Venue { get; set; }
+        public Event Event {  get; set; }
     }
 }
