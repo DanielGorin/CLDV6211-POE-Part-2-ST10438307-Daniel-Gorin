@@ -21,16 +21,15 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
         }
         //Loads the Bookings into a table for users to VIEW
         //-------------------------------------------------------------------------------------------------------------------------
-        public async Task<IActionResult> Index(string searchString)
+        public async Task<IActionResult> Index(string searchString, int? eventTypeId, int? venueId, DateTime? startDate, DateTime? endDate)
         {
             var bookingsQuery = _context.Booking
-                .Include(b => b.Event)
+                .Include(b => b.Event).ThenInclude(e => e.EventType)
                 .Include(b => b.Venue)
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(searchString))
             {
-                // Try to parse as Booking ID
                 if (int.TryParse(searchString, out int bookingId))
                 {
                     bookingsQuery = bookingsQuery.Where(b => b.Id == bookingId);
@@ -41,7 +40,32 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
                 }
             }
 
+            if (eventTypeId.HasValue)
+            {
+                bookingsQuery = bookingsQuery.Where(b => b.Event.EventTypeId == eventTypeId.Value);
+            }
+
+            if (venueId.HasValue)
+            {
+                bookingsQuery = bookingsQuery.Where(b => b.VenueId == venueId.Value);
+            }
+
+            if (startDate.HasValue)
+            {
+                bookingsQuery = bookingsQuery.Where(b => b.Event.Date >= startDate.Value);
+            }
+
+            if (endDate.HasValue)
+            {
+                bookingsQuery = bookingsQuery.Where(b => b.Event.Date <= endDate.Value);
+            }
+
             var bookings = await bookingsQuery.ToListAsync();
+
+            // Populate dropdowns
+            ViewBag.EventTypes = await _context.EventType.ToListAsync();
+            ViewBag.Venues = await _context.Venue.ToListAsync();
+
             return View(bookings);
         }
         //Allows users to CREATE new Bookings

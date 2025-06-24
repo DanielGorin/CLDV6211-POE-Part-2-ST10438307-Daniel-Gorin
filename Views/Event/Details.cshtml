@@ -28,6 +28,14 @@
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.Description)
         </dd>
+
+        <dt class="col-sm-2">
+            Event Type
+        </dt>
+        <dd class="col-sm-10">
+            @Model.EventType?.Category
+        </dd>
+
         <dt class="col-sm-2">
             Temp Image
         </dt>

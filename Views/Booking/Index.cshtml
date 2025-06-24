@@ -8,7 +8,38 @@
 
 <form asp-action="Index" method="get" class="form-inline mb-3">
     <input type="text" name="searchString" value="@Context.Request.Query["searchString"]" class="form-control mr-2" placeholder="Search by Booking ID or Event Name" />
-    <button type="submit" class="btn btn-primary">Search</button>
+
+    <select name="eventTypeId" class="form-control mr-2">
+        <option value="">All Event Types</option>
+        @foreach (var type in ViewBag.EventTypes)
+        {
+            <option value="@type.Id" selected="@(Context.Request.Query["eventTypeId"] == type.Id.ToString() ? "selected" : null)">
+                @type.Category
+            </option>
+        }
+    </select>
+
+    <select name="venueId" class="form-control mr-2">
+        <option value="">All Venues</option>
+        @foreach (var venue in ViewBag.Venues)
+        {
+            <option value="@venue.Id" selected="@(Context.Request.Query["venueId"] == venue.Id.ToString() ? "selected" : null)">
+                @venue.Name
+            </option>
+        }
+    </select>
+
+    <label for="startDate" class="mr-1">From:</label>
+    <input type="date" id="startDate" name="startDate" class="form-control mr-2" value="@Context.Request.Query["startDate"]" />
+
+    <label for="endDate" class="mr-1">To:</label>
+    <input type="date" id="endDate" name="endDate" class="form-control mr-2" value="@Context.Request.Query["endDate"]" />
+
+    <small class="form-text text-muted mb-2 ml-1">
+        Filter events between selected dates.
+    </small>
+
+    <button type="submit" class="btn btn-primary">Filter</button>
     <a asp-action="Index" class="btn btn-secondary ml-2">Clear</a>
 </form>
 
@@ -18,6 +49,9 @@
 <table class="table">
     <thead>
         <tr>
+            <th>
+                Booking ID
+            </th>
             <th>
                 Event
             </th>
@@ -35,25 +69,28 @@
     </thead>
     <tbody>
 @foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Event.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Venue.Name)
-            </td>
-            <td>
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Event.Name)
+                </td>
+                <td>
+                    @item.Event.EventType?.Category
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Venue.Name)
+                </td>
+                <td>
                     @(item.Event?.Date.ToString("yyyy-MM-dd"))
-            </td>
+                </td>
                 <td>
                     @(item.BookingDate.ToString("yyyy-MM-dd"))
                 </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                </td>
+            </tr>
 }
     </tbody>
 </table>

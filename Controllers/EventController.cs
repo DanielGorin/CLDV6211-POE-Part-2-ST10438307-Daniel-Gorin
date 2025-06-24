@@ -11,6 +11,7 @@ using CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Models;
 using CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
@@ -26,7 +27,7 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
         //-------------------------------------------------------------------------------------------------------------------------
         public async Task<IActionResult> Index()
         {
-            var events = await _context.Event.ToListAsync();
+            var events = await _context.Event.Include(e => e.EventType).ToListAsync();
             return View(events);
         }
         //Allows users to CREATE new Event
@@ -35,6 +36,7 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
         //--------------------------------------------------------------
         public IActionResult Create()
         {
+            ViewBag.EventTypes = new SelectList(_context.EventType, "Id", "Category");
             return View();
         }
         //Adds new elements ot the event table
@@ -74,6 +76,7 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
             {
                 return NotFound();
             }
+            ViewBag.EventTypeId = new SelectList(_context.EventType, "Id", "Category", evnt.EventTypeId);
             return View(evnt);
         }
         //Updates the edited element
@@ -148,7 +151,7 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
                 return NotFound();
             }
 
-            var evnt = await _context.Event
+            var evnt = await _context.Event.Include(e => e.EventType)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (evnt == null)
             {
@@ -196,7 +199,7 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
                 return NotFound();
             }
 
-            var evnt = await _context.Event
+            var evnt = await _context.Event.Include(e => e.EventType)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (evnt == null)
             {

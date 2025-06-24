@@ -41,6 +41,14 @@
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.ImageURL)
         </dd>
+
+        <dt class="col-sm-2">
+            Event Type
+        </dt>
+        <dd class="col-sm-10">
+            @Model.EventType?.Category
+        </dd>
+
     </dl>
     
     <form asp-action="Delete">
