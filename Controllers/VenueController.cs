@@ -43,6 +43,15 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
         {
             if (imageFile != null && imageFile.Length > 0)
             {
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+                var extension = Path.GetExtension(imageFile.FileName).ToLowerInvariant();
+
+                if (!allowedExtensions.Contains(extension))
+                {
+                    ModelState.AddModelError("ImageURL", "Invalid file type. Only JPG, PNG, GIF, or WEBP images are allowed.");
+                    return View(venue);
+                }
+
                 string containerName = config["AzureStorage:ImageContainer"];
                 string imageUrl = await blobService.UploadFileAsync(imageFile, containerName);
                 venue.ImageURL = imageUrl;
@@ -91,10 +100,17 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
 
             if (imageFile != null && imageFile.Length > 0)
             {
-                if (!string.IsNullOrEmpty(originalVenue.ImageURL))
-                    await blobService.DeleteFileAsync(originalVenue.ImageURL, config["AzureStorage:ImageContainer"]);
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+                var extension = Path.GetExtension(imageFile.FileName).ToLowerInvariant();
 
-                string imageUrl = await blobService.UploadFileAsync(imageFile, config["AzureStorage:ImageContainer"]);
+                if (!allowedExtensions.Contains(extension))
+                {
+                    ModelState.AddModelError("ImageURL", "Invalid file type. Only JPG, PNG, GIF, or WEBP images are allowed.");
+                    return View(venue);
+                }
+
+                string containerName = config["AzureStorage:ImageContainer"];
+                string imageUrl = await blobService.UploadFileAsync(imageFile, containerName);
                 venue.ImageURL = imageUrl;
             }
             else

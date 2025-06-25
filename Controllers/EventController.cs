@@ -46,6 +46,16 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
         {
             if (imageFile != null && imageFile.Length > 0)
             {
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+                var extension = Path.GetExtension(imageFile.FileName).ToLowerInvariant();
+
+                if (!allowedExtensions.Contains(extension))
+                {
+                    ModelState.AddModelError("ImageURL", "Invalid file type. Only JPG, PNG, GIF, or WEBP images are allowed.");
+                    ViewBag.EventTypes = new SelectList(_context.EventType, "Id", "Category", evnt.EventTypeId);
+                    return View(evnt);
+                }
+
                 string containerName = config["AzureStorage:ImageContainer"];
                 string imageUrl = await blobService.UploadFileAsync(imageFile, containerName);
                 evnt.ImageURL = imageUrl;
@@ -101,12 +111,18 @@ namespace CLDV6211_POE_Part_1_ST10438307_Daniel_Gorin.Controllers
 
             if (imageFile != null && imageFile.Length > 0)
             {
-                // Delete old blob
-                if (!string.IsNullOrEmpty(originalEvent.ImageURL))
-                    await blobService.DeleteFileAsync(originalEvent.ImageURL, config["AzureStorage:ImageContainer"]);
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+                var extension = Path.GetExtension(imageFile.FileName).ToLowerInvariant();
 
-                // Upload new blob
-                string imageUrl = await blobService.UploadFileAsync(imageFile, config["AzureStorage:ImageContainer"]);
+                if (!allowedExtensions.Contains(extension))
+                {
+                    ModelState.AddModelError("ImageURL", "Invalid file type. Only JPG, PNG, GIF, or WEBP images are allowed.");
+                    ViewBag.EventTypes = new SelectList(_context.EventType, "Id", "Category", evnt.EventTypeId);
+                    return View(evnt);
+                }
+
+                string containerName = config["AzureStorage:ImageContainer"];
+                string imageUrl = await blobService.UploadFileAsync(imageFile, containerName);
                 evnt.ImageURL = imageUrl;
             }
             else

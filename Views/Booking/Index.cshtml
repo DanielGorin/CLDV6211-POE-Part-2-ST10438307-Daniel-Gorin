@@ -35,10 +35,6 @@
     <label for="endDate" class="mr-1">To:</label>
     <input type="date" id="endDate" name="endDate" class="form-control mr-2" value="@Context.Request.Query["endDate"]" />
 
-    <small class="form-text text-muted mb-2 ml-1">
-        Filter events between selected dates.
-    </small>
-
     <button type="submit" class="btn btn-primary">Filter</button>
     <a asp-action="Index" class="btn btn-secondary ml-2">Clear</a>
 </form>
